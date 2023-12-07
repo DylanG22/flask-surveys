@@ -2,8 +2,7 @@ from flask import Flask, request, render_template, flash, redirect, session
 from surveys import satisfaction_survey, personality_quiz, surveys
 
 app = Flask(__name__)
-
-responses = []
+app.config['SECRET_KEY'] = 'Spaghetti&meAtballZ'
 
 curr_survey = satisfaction_survey
 
@@ -22,12 +21,13 @@ def make_session():
 @app.route('/question/<index>')
 def show_question(index):
     i = int(index)
-    if i != len(session['responses']):
-        flash('Invalid Question')
-        return redirect(f'/question/{len(session["responses"])}')
-    elif len(curr_survey.questions) == len(session['responses']):
+    if len(curr_survey.questions) == len(session['responses']):
         flash('Survey Already Somplete')
         return redirect('/survey_complete')
+    elif i != len(session['responses']):
+        flash('Invalid Question')
+        return redirect(f'/question/{len(session["responses"])}')
+
     return render_template('question.html', q=curr_survey.questions[i], idx=i)
 
 @app.route('/answer', methods=['POST'])
@@ -35,7 +35,6 @@ def handle_ans():
     req_list = list(request.form)
     i = req_list[0]
     ans = request.form[i]
-    print(i,ans,type(ans))
     i = int(i)
     i+=1
     res = session['responses']
@@ -47,4 +46,5 @@ def handle_ans():
 
 @app.route('/survey_complete')
 def survey_complete():
+    print(session['responses'])
     return render_template('complete.html')
